@@ -18,12 +18,13 @@ title="Borrowing of study materials among social informatics students"
 meta=[{"date":ctime, "author": "Pajek2JSON"}]
 info = {"network": "ClassE", "org": 1,
   "nNodes": n, "nArcs": mA, "nEdges": mE,
-  "title": title, "meta": meta}
+  "title": title, "meta": meta, "simple": True, "directed": False,
+  "multirel": False, "mode": 1}
 # nodes
 nodes = []
 for node in P.nodes():
   Node = {"id": node, "lab": P.getNode(node,"lab"),
-    "x": P.getNode(node,"x"), "y": P.getNode(node,"x"),
+    "x": P.getNode(node,"x"), "y": P.getNode(node,"y"),
     "sex": P.getNode(node,"sex")}      
   nodes.append(Node)  
 # links
