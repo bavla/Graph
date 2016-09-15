@@ -6,7 +6,7 @@
 # last change: 12. January 2014
 # last change: 29. August 2016
 
-import re, sys
+import re, sys, json
 import turtle as t
 from math import *
 from random import random, randint, shuffle
@@ -300,8 +300,8 @@ class Graph(Search,Coloring):
         except:
             raise Graph.graphError(
                 "Problems with Pajek file {0}".format(file))
-        G = Graph(); status = 0; meta = ''; rels = {}
-        temporal = False; multirel = False
+        G = Graph(); mode = 1; status = 0; meta = ''; rels = {}
+        simple = False; temporal = False; multirel = False
         while True:
             line = net.readline()
             if not line: break
@@ -381,6 +381,8 @@ class Graph(Search,Coloring):
                 if multirel : G.addEdge(u,v,w=w,rel=rn)
                 else: G.addEdge(u,v,w=w)
         net.close()
+        G._graph['simple'] = simple
+        G._graph['mode'] = mode
         G._graph['temporal'] = temporal
         if len(rels)>0:
             G._graph['multirel'] = True
@@ -388,6 +390,40 @@ class Graph(Search,Coloring):
             G._graph['legends']['rels'] = rels
         if len(meta)>0:
             G._graph['meta'] = meta
+        return G
+    def loadNetJSON(file):
+        try:
+            js = open(file,'r')
+        except:
+            raise Graph.graphError(
+                "Problems with Pajek file {0}".format(file))
+        net = json.loads(js.read())
+        mode = net['info'].get('mode',1)
+        G = Graph()
+        G._graph['mode'] = mode
+        G._graph['simple'] = net['info'].get('simple',False)
+        G._graph['meta'] = net['info'].get('meta',[])
+        G._graph['multirel'] = net['info'].get('multirel',False)
+        G._graph['directed'] = net['info'].get('directed',False)        
+        G._graph['legends'] = net['info'].get('legends',{})
+        temporal = net['info'].get('temporal',False)
+        G._graph['temporal'] = temporal
+        if temporal:
+            if 'time' in net['info']:
+                Tmin = net['info']['time'].get('Tmin',1)
+                Tmax = net['info']['time'].get('Tmax',999999999)
+                G._graph['time'] = (Tmin,Tmax)
+                G._graph['legends']['Tlabs'] = net['info']['time'].get('Tlabs',{})
+            else: raise Graph.graphError("Missing Time info")
+        for K in net['nodes']:
+            L = K.copy(); vid = L.pop('id',None); G.addNode(vid,mode)
+            G._nodes[vid][3] = L
+        for K in net['links']:
+            L = K.copy(); lid = L.pop('id',None);
+            u = L.pop('n1',None); v = L.pop('n2',None)
+            r = L.pop('id',None); t = L.pop('type','edge')
+            if t=='arc': l = G.addArc(u,v,w=L,rel=r,id=lid)
+            else: l = G.addEdge(u,v,w=L,rel=r,id=lid)            
         return G
     def savePajek(self,file,coord=True):
 # sprogramiraj še za dvodelna omrežja
