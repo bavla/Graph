@@ -1,0 +1,295 @@
+{
+   "netJSON": "basic",
+   "info": {
+      "meta": [
+         {
+            "author": "Vladimir Batagelj",
+            "tit": "network for testing temporal Pathfinder procedure",
+            "url": "http://pajek.imfm.si/lib/exe/fetch.php?media=slides:pfxxx.pdf",
+            "date": "May 24, 2014"
+         },
+         {
+            "date": "Sun May 25 21:12:35 2014",
+            "tit": "saved from Ianus to TEN"
+         },
+         {
+            "date": "Fri Sep 16 08:07:26 2016",
+            "tit": "saved from Ianus to netJSON"
+         }
+      ],
+      "network": "PathfinderTest",
+      "mode": 1,
+      "simple": true,
+      "directed": true,
+      "multirel": false,
+      "org": 1,
+      "nNodes": 7,
+      "nEdges": 0,
+      "nArcs": 14,
+      "temporal": true,
+      "time": {
+         "Tmax": 9,
+         "Tmin": 1,
+         "Tlabs": {}
+      }
+   },
+   "links": [
+      {
+         "n2": 2,
+         "tq": [
+            [
+               1,
+               9,
+               3
+            ]
+         ],
+         "type": "arc",
+         "n1": 1
+      },
+      {
+         "n2": 3,
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "type": "arc",
+         "n1": 1
+      },
+      {
+         "n2": 6,
+         "tq": [
+            [
+               1,
+               9,
+               5
+            ]
+         ],
+         "type": "arc",
+         "n1": 1
+      },
+      {
+         "n2": 4,
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "type": "arc",
+         "n1": 2
+      },
+      {
+         "n2": 5,
+         "tq": [
+            [
+               1,
+               9,
+               3
+            ]
+         ],
+         "type": "arc",
+         "n1": 2
+      },
+      {
+         "n2": 7,
+         "tq": [
+            [
+               1,
+               9,
+               7
+            ]
+         ],
+         "type": "arc",
+         "n1": 2
+      },
+      {
+         "n2": 2,
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "type": "arc",
+         "n1": 3
+      },
+      {
+         "n2": 4,
+         "tq": [
+            [
+               1,
+               5,
+               3
+            ],
+            [
+               5,
+               9,
+               1
+            ]
+         ],
+         "type": "arc",
+         "n1": 3
+      },
+      {
+         "n2": 6,
+         "tq": [
+            [
+               1,
+               9,
+               5
+            ]
+         ],
+         "type": "arc",
+         "n1": 3
+      },
+      {
+         "n2": 5,
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "type": "arc",
+         "n1": 4
+      },
+      {
+         "n2": 6,
+         "tq": [
+            [
+               1,
+               9,
+               3
+            ]
+         ],
+         "type": "arc",
+         "n1": 4
+      },
+      {
+         "n2": 6,
+         "tq": [
+            [
+               1,
+               4,
+               2
+            ],
+            [
+               4,
+               9,
+               1
+            ]
+         ],
+         "type": "arc",
+         "n1": 5
+      },
+      {
+         "n2": 7,
+         "tq": [
+            [
+               1,
+               9,
+               4
+            ]
+         ],
+         "type": "arc",
+         "n1": 5
+      },
+      {
+         "n2": 7,
+         "tq": [
+            [
+               1,
+               9,
+               2
+            ]
+         ],
+         "type": "arc",
+         "n1": 6
+      }
+   ],
+   "nodes": [
+      {
+         "lab": "A",
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "id": 1
+      },
+      {
+         "lab": "B",
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "id": 2
+      },
+      {
+         "lab": "C",
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "id": 3
+      },
+      {
+         "lab": "D",
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "id": 4
+      },
+      {
+         "lab": "E",
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "id": 5
+      },
+      {
+         "lab": "F",
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "id": 6
+      },
+      {
+         "lab": "G",
+         "tq": [
+            [
+               1,
+               9,
+               1
+            ]
+         ],
+         "id": 7
+      }
+   ]
+}
