@@ -6,7 +6,7 @@
 # last change: 12. January 2014
 # last change: 29. August 2016
 
-import re, sys, json
+import re, sys, json, TQ
 import turtle as t
 from math import *
 from random import random, randint, shuffle
@@ -51,7 +51,7 @@ class Graph(Search,Coloring):
     def __init__(self,simple=False,mode=1,multirel=False,temporal=False):
         self._linkId = 0
         self._graph = {'simple': simple,'mode': mode,'multirel':multirel,
-            'temporal':temporal}
+            'temporal':temporal,'meta':[],'legends':{}}
         self._nodes = {}
         self._links = {}
     def __Str__(self): return "Graph:\nNodes: "+ \
@@ -132,13 +132,13 @@ class Graph(Search,Coloring):
         return (set(self._nodes[u][0].keys()) |
                 set(self._nodes[u][2].keys()))
     def edgeStar(self,u):
-        for L in self._nodes[u][0]:
+        for L in self._nodes[u][0].values():
             for edge in L: yield edge
     def inArcStar(self,u):
-        for L in self._nodes[u][1]:
+        for L in self._nodes[u][1].values():
             for arc in L: yield arc
     def outArcStar(self,u):
-        for L in self._nodes[u][2]:
+        for L in self._nodes[u][2].values():
             for arc in L: yield arc
     def star(self,u):
         return chain(self.edgeStar(u),self.inArcStar(u),self.outArcStar(u))
@@ -294,6 +294,26 @@ class Graph(Search,Coloring):
                     if not r in C._links: C._links[r] = {'w': 0}
                     C._links[r]['w'] += Apw*B._links[q]['w']
         return C
+    def TQnetDeg(self,u):
+        deg = []
+        for p in self.star(u):
+            deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4]['tq']))
+        return deg
+    def TQnetInDeg(self,u):
+        deg = []
+        for p in self.inStar(u):
+            deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4]['tq']))
+        return deg
+    def TQnetOutDeg(self,u):
+        deg = []
+        for p in self.outStar(u):
+            deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4]['tq']))
+        return deg    
+    def TQnetBin(self):
+        B = deepcopy(self)
+        for p in B._links:
+            B._links[p][4]['tq'] = TQ.TQ.binary(B._links[p][4]['tq'])
+        return B        
     def loadPajek(file):
         try:
             net = open(file,'r')

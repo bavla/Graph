@@ -905,11 +905,11 @@ class TQ(object):
          net.close()
 
    @staticmethod
-   def Ianus2netJSON(N,file="test.json"):
+   def Ianus2netJSON(N,file="test.json",indent=None):
       K = N.keys()
       if not('dim' in K): raise TQ.TQerror("Ianus2netJSON: missing DIM")
       if not('mat' in K): raise TQ.TQerror("Ianus2netJSON: missing MAT")
-      (nr, nc, minT, maxT) = N['dim']; M = N['mat']; org = 1; indent = 3
+      (nr, nc, minT, maxT) = N['dim']; M = N['mat']; org = 1
       info = {}; types = N.get('typ',[])
       info['network'] = N.get('tit',"test");
       info['org'] = org; info['temporal'] = True
@@ -918,8 +918,8 @@ class TQ(object):
       info['multirel'] = 'multirel' in types
       info['mode'] = 1 if nr==nc else 2
       info['meta'] = [ N.get('met',{}) ]
-      info['meta'].append({"time": datetime.datetime.now().ctime(),\
-         "tit": "saved from Ianus" })
+      info['meta'].append({"date": datetime.datetime.now().ctime(),\
+         "tit": "saved from Ianus to netJSON" })
       info['nNodes'] = nr; time = { "Tmin": minT, "Tmax": maxT }
       if 'til' in K:
          Tlabs = { str(k): v for k,v in N['til'] }
