@@ -42,7 +42,7 @@ class Graph(Search,Coloring):
     def initNode(self,e): return self._links[e][0]
     def termNode(self,e): return self._links[e][1]
     def twin(self,u,e):
-        S={self.initNode[e],self.termNode[e]}
+        S={self.initNode(e),self.termNode(e)}
         if not (u in S):
             warn("Node {0} not on link {1}".format(u,e))
             return None
@@ -168,9 +168,9 @@ class Graph(Search,Coloring):
     def setLink(self,e,key,val): self._links[e][4][key] = val
     def getLink(self,e,key):
         return self._links[e][4][key] if key in self._links[e][4] else None
-    def degree(self,u): return len(self.neighbors(u))
-    def inDegree(self,u): return len(self.inNeighbors(u))
-    def outDegree(self,u): return len(self.outNeighbors(u))
+    def degree(self,u): return len(list(self.star(u)))
+    def inDegree(self,u): return len(list(self.inStar(u)))
+    def outDegree(self,u): return len(list(self.outNeighbors(u)))
     def reverse(self):
         R = Graph()
         R._graph = copy(self._graph)
@@ -295,17 +295,17 @@ class Graph(Search,Coloring):
                     C._links[r]['w'] += Apw*B._links[q]['w']
         return C
     def TQnetDeg(self,u):
-        deg = []
+        deg = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
         for p in self.star(u):
             deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4]['tq']))
         return deg
     def TQnetInDeg(self,u):
-        deg = []
+        deg = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
         for p in self.inStar(u):
             deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4]['tq']))
         return deg
     def TQnetOutDeg(self,u):
-        deg = []
+        deg = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
         for p in self.outStar(u):
             deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4]['tq']))
         return deg    

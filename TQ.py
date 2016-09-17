@@ -144,10 +144,13 @@ class TQ(object):
 
    @staticmethod
    def binary(a):
-      c = []
-      for (sa,fa,va) in a:
-         if va > 0: c.append((sa,fa,1))
-      return(TQ.standard(c))
+      b = [ (sa,fa,1) for sa,fa,va in a if va > 0 ]
+      return(TQ.standard(b))
+
+   @staticmethod
+   def setConst(a,c):
+      b = [ (sa,fa,c) for sa,fa,va in a ]
+      return(TQ.standard(b))
 
    @staticmethod
    def fillGaps(a,s,f,const=inf):
@@ -165,6 +168,14 @@ class TQ(object):
          if va!=0: c.append((sa,fa,1/va))
          else: c.append((sa,fa,0))
       return(c)
+
+   @staticmethod
+   def minus(a):
+      return [(sa,fa,-va) for (sa,fa,va) in a]
+
+   @staticmethod
+   def cut(a,c):
+      return [(sa,fa,va) for (sa,fa,va) in a if va > c]
 
    @staticmethod
    def total(a):
