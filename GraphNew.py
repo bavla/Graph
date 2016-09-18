@@ -171,6 +171,17 @@ class Graph(Search,Coloring):
     def degree(self,u): return len(list(self.star(u)))
     def inDegree(self,u): return len(list(self.inStar(u)))
     def outDegree(self,u): return len(list(self.outNeighbors(u)))
+    def pairs2edges(self):
+    # from copy import copy, deepcopy
+        S = Graph()
+        S._graph = deepcopy(self._graph)
+        for u in self._nodes:
+            ia,ed,oa,pr = self._nodes[u]
+            S._nodes[u] = [{},{},{},pr]
+        for p in self._links:
+            u,v,d,r,w = self._links[p]
+            if u<=v: lid=S.addEdge(u,v,w=w)
+        return S
     def reverse(self):
         R = Graph()
         R._graph = copy(self._graph)
