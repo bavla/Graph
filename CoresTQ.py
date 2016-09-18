@@ -4,10 +4,11 @@ import sys, os, datetime, json
 sys.path = [gdir]+sys.path; os.chdir(wdir)
 import GraphNew as Graph
 import TQ
+# fJSON = 'XYZ.json'
 # fJSON = 'Terror news 50.json'
 # S = Graph.Graph.loadNetJSON(fJSON); G = S.pairs2edges()
-# fJSON = 'ConnectivityTest.json'
-fJSON = 'ExampleB.json'
+fJSON = 'ConnectivityTest.json'
+# fJSON = 'ExampleB.json'
 # fJSON = 'PathfinderTest.json'
 G = Graph.Graph.loadNetJSON(fJSON)
 print("Temporal cores in: ",fJSON)
@@ -25,8 +26,9 @@ while len(D)>0:
    step += 1
    dmin,u = min( (v,k) for k,v in Dmin.items() )
    print("{0:3d}. dmin={1:3d}   node={2:4d}".format(step,dmin,u))
-   pos = [i for i, d in enumerate(D[u]) if d[2] == dmin]
-   core = [ D[u][p] for p in pos ]
+#   pos = [i for i, d in enumerate(D[u]) if d[2] == dmin]
+#   core = [ D[u][p] for p in pos ]
+   core = [ d for d in D[u] if d[2] == dmin ]
    Core[u] = TQ.TQ.sum(Core[u],core)
    change = TQ.TQ.setConst(core,-1)
    D[u] = TQ.TQ.cut(TQ.TQ.sum(D[u],change),dmin)
