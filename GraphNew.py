@@ -324,17 +324,30 @@ class Graph(Search,Coloring):
         for p in self.outStar(u):
             deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4]['tq']))
         return deg    
+    def TQnetSum(self,u):
+        s = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
+        for p in self.star(u):
+            s = TQ.TQ.sum(s,self._links[p][4]['tq'])
+        return s
+    def TQnetInSum(self,u):
+        s = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
+        for p in self.inStar(u):
+            s = TQ.TQ.sum(s,self._links[p][4]['tq'])
+        return s
+    def TQnetOutSum(self,u):
+        s = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
+        for p in self.outStar(u):
+            s = TQ.TQ.sum(s,self._links[p][4]['tq'])
+        return s    
     def TQnetBin(self):
         B = deepcopy(self)
         for p in B._links:
             B._links[p][4]['tq'] = TQ.TQ.binary(B._links[p][4]['tq'])
         return B        
     def loadPajek(file):
-        try:
-            net = open(file,'r')
-        except:
-            raise Graph.graphError(
-                "Problems with Pajek file {0}".format(file))
+        try: net = open(file,'r')
+        except: raise Graph.graphError(
+            "Problems with Pajek file {0}".format(file))
         G = Graph(); mode = 1; status = 0; meta = ''; rels = {}
         simple = False; temporal = False; multirel = False
         while True:
@@ -475,8 +488,6 @@ class Graph(Search,Coloring):
         info['meta'].append({"date": datetime.datetime.now().ctime(),\
              "title": "saved from Graph to netJSON" })
         info['nNodes'] = n
-        info['nArcs'] = len(list(self.arcs()))
-        info['nEdges'] = len(list(self.edges()))
         if temporal:
             minT, maxT = self._graph['time']
             Tlabs = self._graph.get('Tlabs',
@@ -498,8 +509,8 @@ class Graph(Search,Coloring):
             Link["n1"] = u; Link["n2"] = v
             if r!=None: Link["rel"] = r
             links.append(Link)      
-        info['nArcs'] = len(links)
-        info['nEdges'] = 0;
+        info['nArcs'] = len(list(self.arcs()))
+        info['nEdges'] = len(list(self.edges()))
         if file==None: file = info['network']+'.json'
         net = {"netJSON": "basic", "info": info, "nodes": nodes, "links": links}
         js = open(file,'w')
