@@ -4,7 +4,8 @@ import sys, os, datetime, json
 sys.path = [gdir]+sys.path; os.chdir(wdir)
 import GraphNew as Graph
 import TQ
-fJSON = 'stem.json'
+fJSON = "violenceE.json"
+# fJSON = 'stem.json'
 # fJSON = 'Terror news 50.json'
 # S = Graph.Graph.loadNetJSON(fJSON); G = S.pairs2edges()
 # fJSON = 'ConnectivityTest.json'
