@@ -6,7 +6,7 @@
 # last change: 12. January 2014
 # last change: 29. August 2016
 
-import re, sys, json, TQ
+import re, sys, json, TQ, datetime
 import turtle as t
 from math import *
 from random import random, randint, shuffle
@@ -158,6 +158,11 @@ class Graph(Search,Coloring):
     def delNode(self,u):
         for e in self.star(u): self.delLink(e)
         del(self._nodes[u])
+    def delLoops(self):
+        for u in self._nodes:
+            ed, ia, oa, np = self._nodes[u]
+            le = ed.pop(u,None); li = ia.pop(u,None); lo = oa.pop(u,None)
+            self._nodes[u] = [ed, ia, oa, np]
     def setGraph(self,key,val): self._graph[key] = val
     def getGraph(self,key): return self._graph[key]
     def setNode(self,u,key,val): self._nodes[u][3][key] = val
@@ -172,11 +177,10 @@ class Graph(Search,Coloring):
     def inDegree(self,u): return len(list(self.inStar(u)))
     def outDegree(self,u): return len(list(self.outNeighbors(u)))
     def pairs2edges(self):
-    # from copy import copy, deepcopy
         S = Graph()
         S._graph = deepcopy(self._graph)
         for u in self._nodes:
-            ia,ed,oa,pr = self._nodes[u]
+            ed,ia,oa,pr = self._nodes[u]
             S._nodes[u] = [{},{},{},pr]
         for p in self._links:
             u,v,d,r,w = self._links[p]
@@ -456,6 +460,49 @@ class Graph(Search,Coloring):
             if t=='arc': l = G.addArc(u,v,w=L,rel=r,id=lid)
             else: l = G.addEdge(u,v,w=L,rel=r,id=lid)            
         return G
+    def saveNetJSON(self,file=None,indent=None):
+        n = len(self._nodes)
+        info = {}; nodes = {}; links = {};
+        info['simple'] = self._graph['simple'] 
+        info['directed'] = len(list(self.edges()))==0
+        temporal = self._graph['temporal']
+        info['temporal'] = temporal
+        info['org'] = 1
+        info['mode'] = self._graph['mode']
+        info['network'] = "test"
+        info['multirel'] = False
+        info['meta'] =  self._graph['meta'] 
+        info['meta'].append({"date": datetime.datetime.now().ctime(),\
+             "title": "saved from Graph to netJSON" })
+        info['nNodes'] = n
+        if temporal:
+            minT, maxT = self._graph['time']
+            Tlabs = self._graph.get('Tlabs',
+               { str(y):str(y) for y in range(minT,maxT+1)})
+            info['time'] = { "Tmin": minT, "Tmax": maxT, "Tlabs": Tlabs }
+#      if 'til' in K:
+#         Tlabs = { str(k): v for k,v in N['til'] }
+#         time['Tlabs'] = Tlabs
+#      if nr!=nc: raise TQ.TQerror("Ianus2netJSON: two-mode not implemented yet")
+#        nodeAct = N.get('tin', [(minT, maxT+1, 1) for v in range(nr)])
+        nodes = []
+        for node in self._nodes:
+            Node = self._nodes[node][3]; Node['id'] = node 
+            nodes.append(Node)
+        links = []
+        for link in self._links:
+            u,v,d,r,w = self._links[link]; Link = w 
+            Link["type"] = "arc" if d else "edge"
+            Link["n1"] = u; Link["n2"] = v
+            if r!=None: Link["rel"] = r
+            links.append(Link)      
+        info['nArcs'] = len(links)
+        info['nEdges'] = 0;
+        if file==None: file = info['network']+'.json'
+        net = {"netJSON": "basic", "info": info, "nodes": nodes, "links": links}
+        js = open(file,'w')
+        json.dump(net, js, ensure_ascii=False, indent=indent)
+        js.close()
     def savePajek(self,file,coord=True):
 # sprogramiraj še za dvodelna omrežja
         net = open(file,'w'); n=len(self._nodes)

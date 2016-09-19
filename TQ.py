@@ -174,8 +174,12 @@ class TQ(object):
       return [(sa,fa,-va) for (sa,fa,va) in a]
 
    @staticmethod
-   def cut(a,c):
+   def cutGT(a,c):
       return [(sa,fa,va) for (sa,fa,va) in a if va > c]
+
+   @staticmethod
+   def cutGE(a,c):
+      return [(sa,fa,va) for (sa,fa,va) in a if va >= c]
 
    @staticmethod
    def total(a):
@@ -320,6 +324,12 @@ class TQ(object):
             r.append((sa,fa,C[ca]))
          q.append(r)
       return(q)
+
+   ''' temporal dictionaries operations '''  
+   @staticmethod
+   def TQdictCut(D,level):
+      CC = { u: TQ.cutGE(core,level) for u, core in D.items() }
+      return { u: core for u, core in CC.items() if core!=[] }
 
    ''' temporal vectors operations '''  
    @staticmethod
