@@ -184,7 +184,7 @@ class Graph(Search,Coloring):
             S._nodes[u] = [{},{},{},pr]
         for p in self._links:
             u,v,d,r,w = self._links[p]
-            if u<=v: lid=S.addEdge(u,v,w=w)
+            if u<=v: lid=S.addEdge(u,v,w=w)       
         return S
     def reverse(self):
         R = Graph()
@@ -475,6 +475,8 @@ class Graph(Search,Coloring):
         info['meta'].append({"date": datetime.datetime.now().ctime(),\
              "title": "saved from Graph to netJSON" })
         info['nNodes'] = n
+        info['nArcs'] = len(list(self.arcs()))
+        info['nEdges'] = len(list(self.edges()))
         if temporal:
             minT, maxT = self._graph['time']
             Tlabs = self._graph.get('Tlabs',
