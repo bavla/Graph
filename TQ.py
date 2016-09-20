@@ -162,6 +162,15 @@ class TQ(object):
       return(c)
 
    @staticmethod
+   def complement(a,s,f):
+      c = []; fo = s
+      for (sa,fa,va) in a:
+         if fo<sa: c.append((fo,sa,1))
+         fo = fa
+      if fo<f: c.append((fo,f,1))         
+      return(c)
+
+   @staticmethod
    def invert(a):
       c = []
       for (sa,fa,va) in a:
