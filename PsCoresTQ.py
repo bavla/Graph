@@ -4,22 +4,23 @@ import sys, os, datetime, json
 sys.path = [gdir]+sys.path; os.chdir(wdir)
 import GraphNew as Graph
 import TQ
-fJSON = 'ConnectivityWeighted.json'
+# fJSON = 'ConnectivityWeighted.json'
 # fJSON = "violenceE.json"
 # fJSON = 'stem.json'
-# fJSON = 'Terror news 50.json'
-# S = Graph.Graph.loadNetJSON(fJSON); G = S.pairs2edges()
+fJSON = 'Terror news 50.json'
+S = Graph.Graph.loadNetJSON(fJSON); G = S.pairs2edges()
+G.saveNetJSON(file="Terror50E",indent=1)
 # fJSON = 'ConnectivityTest.json'
 # fJSON = 'ExampleB.json'
 # fJSON = 'PathfinderTest.json'
-G = Graph.Graph.loadNetJSON(fJSON)
+# G = Graph.Graph.loadNetJSON(fJSON)
 G.delLoops()
 print("Temporal Ps cores in: ",fJSON)
 t1 = datetime.datetime.now()
 print("started: ",t1.ctime(),"\n")
 Tmin,Tmax = G._graph['time']
 D = { u: G.TQnetSum(u) for u in G._nodes }
-print("Sum =",D,"\n")
+# print("Sum =",D,"\n")
 Core = { u: [d for d in D[u] if d[2]==0] for u in G.nodes() }
 # core number = 0
 D = { u: [d for d in D[u] if d[2]>0] for u in G.nodes() }
@@ -48,7 +49,7 @@ while len(D)>0:
    if len(D[u])==0: del D[u]; del Dmin[u]
    else: Dmin[u] = min([e[2] for e in D[u]])
 print("{0:3d}. dmin={1:3d}   node={2:4d}".format(step,dmin,u))
-print("\n-----\nCore =",Core)
+# print("\n-----\nCore =",Core)
 t2 = datetime.datetime.now()
 print("\nfinished: ",t2.ctime(),"\ntime used: ", t2-t1)
 
