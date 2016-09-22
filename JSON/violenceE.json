@@ -13,8 +13,8 @@
   "mode": 1,
   "temporal": true,
   "time": {
-   "Tmax": 49,
    "Tmin": 1,
+   "Tmax": 49,
    "Tlabs": {
     "42": "42",
     "23": "23",
