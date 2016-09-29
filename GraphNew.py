@@ -196,25 +196,22 @@ class Graph(Search,Coloring):
         for e in self._links.keys(): R._links[e] = dict(self._links[e])
         return R
     def transpose(self):
-        if self._graph['mode'] == 1: raise self.graphError(
-            "transpose works on two-mode networks")
-# napiši še za one-mode  self.reverse()
+        if self._graph['mode'] == 1: return self.reverse()
         T = Graph()
-        n1 = len(list(self.nodesMode(1))); n2 = len(list(self.nodesMode(2)))
-        T._graph = copy(self._graph)
+        nr, nc = self._graph['dim']
+        T._graph = deepcopy(self._graph)
         for v in self._nodes.keys():
             if self._nodes[v][3]['mode']==1:
-                t = v+n2; mode = 2
-            else: t = v-n1; mode = 1
+                t = v+nc; mode = 2
+            else: t = v-nr; mode = 1
             T.addNode(t)
             T._nodes[t][3] = dict(self._nodes[v][3])
             T._nodes[t][3]['mode'] = mode
-# narobe - 3 parameter v addArc je utež
         for p in self._links.keys():
-            u,v,directed,*r = self._links[p]
-            if directed: T.addArc(v-n1,u+n2,id=p)
-            else: T.addEdge(v-n1,u+n2,id=p)
-            T._links[p] = self._links[p]
+            u,v,directed,r,w = self._links[p]
+            if directed: T.addArc(v-nr,u+nc,w,r,id=p)
+            else: T.addEdge(v-nr,u+nc,w,r,id=p)
+        T._graph['dim'] = [nc,nr]
         return T
     def one2twoMode(self):
         T = Graph(); n = len(self._nodes)
@@ -290,24 +287,84 @@ class Graph(Search,Coloring):
                        if not r in G._links: G._links[r] = {'w': 0}
                        G._links[r]['w'] += pw*self._links[q]['w']
         return G
-    def multiply(A,B):
-        na2 = len(list(A.nodesMode(2))); nb1 = len(list(B.nodesMode(1)))
-        if na2 != nb1: raise Graph.graphError(
-            "Noncompatible networks {0} != {1}".format(na2,nb1))
-        na1 = len(list(A.nodesMode(1))); nb2 = len(list(B.nodesMode(2)))
-        C = Graph(); C._graph['mode'] = 2; mode = 1
-        for v in range(na1+nb2):
-            if v==na1: mode = 2
-            C.addNode(v+1,mode)
-            if v<na1: C._nodes[v+1][3] = dict(A._nodes[v+1][3])
-            else: C._nodes[v+1][3] = dict(B._nodes[v+1+nb1-na1][3])
+    def multiply(A,B,oneMode=False):
+        nar,nac = A._graph['dim']; nbr,nbc = B._graph['dim']
+        if nac != nbr: raise Graph.graphError(
+            "Noncompatible networks {0} != {1}".format(nac,nbr))
+        if oneMode and (nar != nbc): raise Graph.graphError(
+            "Product is not a one-mode network {0} != {1}".format(nar,nbc))
+        C = Graph(); C._graph['mode'] = 2; C._graph['dim'] = [nar,nbc]
+        for v in range(nar):
+            C.addNode(v+1,1); C._nodes[v+1][3] = dict(A._nodes[v+1][3])
+        if not oneMode:
+            for v in range(nar,nar+nbc):
+                C.addNode(v+1,2)
+                C._nodes[v+1][3] = dict(B._nodes[v+1+nbr-nar][3])
         for t in A.nodesMode(2):
             for p in A.inStar(t):
-                u = Graph.twin(t,p); Apw = A._links[p]['w']
-                for q in B.outStar(t-na1):
-                    v = Graph.twin(t-na1,q)+na1-nb1; r = (u,v,1)
-                    if not r in C._links: C._links[r] = {'w': 0}
-                    C._links[r]['w'] += Apw*B._links[q]['w']
+                u = A.twin(t,p); Apw = A._links[p][4]['w']
+                for q in B.outStar(t-nar):
+                    v = B.twin(t-nar,q)-nbr
+                    if not oneMode: v = v+nar
+                    r = (u,v)
+                    if not r in C._links: C._links[r] = \
+                       [ u, v, True, None, {'w': 0} ]
+                    C._links[r][4]['w'] += Apw*B._links[q][4]['w']
+        return C
+    def TQtwo2oneRows(self):
+        nr,nc = self._graph['dim']
+        C = Graph(); C._graph['mode'] = 1; C._graph['nNodes'] = nr
+        for v in range(nr):
+            C.addNode(v+1,1); C._nodes[v+1][3] = dict(self._nodes[v+1][3])
+        for t in self.nodesMode(2):
+            for p in self.inStar(t):
+                u = self.twin(t,p); Apw = self._links[p][4]['tq']
+                for q in self.inStar(t):
+                    v = self.twin(t,q); r = (u,v)
+                    if not r in C._links: C._links[r] = \
+                       [ u, v, True, None, {'tq': []} ]
+                    C._links[r][4]['tq'] = TQ.TQ.sum(C._links[r][4]['tq'],
+                       TQ.TQ.prod(Apw,self._links[q][4]['tq']))
+        return C
+    def TQtwo2oneCols(self):
+        nr,nc = self._graph['dim']
+        C = Graph(); C._graph['mode'] = 2; C._graph['nNodes'] = nc
+        for v in range(nc):
+            C.addNode(v+1,1); C._nodes[v+1][3] = dict(self._nodes[nr+v+1][3])
+        for t in self.nodesMode(1):
+            for p in self.outStar(t):
+                u = self.twin(t,p)-nr; Apw = self._links[p][4]['tq']
+                for q in self.outStar(t):
+                    v = self.twin(t,q)-nr; r = (u,v)
+                    if not r in C._links: C._links[r] = \
+                       [ u, v, True, None, {'tq': []} ]
+                    C._links[r][4]['tq'] = TQ.TQ.sum(C._links[r][4]['tq'],
+                       TQ.TQ.prod(Apw,self._links[q][4]['tq']))
+        return C
+    def TQmultiply(A,B,oneMode=False):
+        nar,nac = A._graph['dim']; nbr,nbc = B._graph['dim']
+        if nac != nbr: raise Graph.graphError(
+            "Noncompatible networks {0} != {1}".format(nac,nbr))
+        if oneMode and (nar != nbc): raise Graph.graphError(
+            "Product is not a one-mode network {0} != {1}".format(nar,nbc))
+        C = Graph(); C._graph['mode'] = 2; C._graph['dim'] = [nar,nbc]
+        for v in range(nar):
+            C.addNode(v+1,1); C._nodes[v+1][3] = dict(A._nodes[v+1][3])
+        if not oneMode:
+            for v in range(nar,nar+nbc):
+                C.addNode(v+1,2)
+                C._nodes[v+1][3] = dict(B._nodes[v+1+nbr-nar][3])
+        for t in A.nodesMode(2):
+            for p in A.inStar(t):
+                u = A.twin(t,p); Apw = A._links[p][4]['tq']
+                for q in B.outStar(t-nar):
+                    v = B.twin(t-nar,q)-nbr
+                    if not oneMode: v = v+nar
+                    r = (u,v)
+                    if not r in C._links: C._links[r] = \
+                       [ u, v, True, None, {'tq': []} ]
+                    C._links[r][4]['tq'] = TQ.TQ.sum(C._links[r][4]['tq'],
+                       TQ.TQ.prod(Apw,B._links[q][4]['tq']))
         return C
     def TQnetDeg(self,u):
         deg = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
@@ -439,16 +496,18 @@ class Graph(Search,Coloring):
         if len(meta)>0:
             G._graph['meta'] = meta
         return G
-    def loadNetJSON(file):
-        try:
-            js = open(file,'r')
-        except:
-            raise Graph.graphError(
-                "Problems with Pajek file {0}".format(file))
+    def loadNetJSON(file, encoding='utf-8'):
+        try: js = open(file,'r',encoding=encoding)
+        except: raise Graph.graphError(
+            "Problems with Pajek file {0}".format(file))
         net = json.loads(js.read())
         mode = net['info'].get('mode',1)
+        n = net['info'].get('nNodes',0)
         G = Graph()
         G._graph['mode'] = mode
+        if mode==2:
+            nr, nc = G._graph['dim'] = net['info'].get('dim',[0,0])
+            if nr==0: raise Graph.graphError("Missing mode1 size")
         G._graph['simple'] = net['info'].get('simple',False)
         G._graph['meta'] = net['info'].get('meta',[])
         G._graph['multirel'] = net['info'].get('multirel',False)

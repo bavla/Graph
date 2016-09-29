@@ -787,7 +787,7 @@ class TQ(object):
          
    @staticmethod
    def Ianus2Mat(tenFile):
-      net = open(tenFile,'r')#),encoding='utf-8')
+      net = open(tenFile,'r',encoding='utf-8')
 #      net = open(tenFile,encoding='utf-8-sig','r')
       line = net.readline()
       if not line: raise TQ.TQerror("readTen: empty file")
@@ -949,24 +949,43 @@ class TQ(object):
       info['mode'] = 1 if nr==nc else 2
       info['meta'] = [ N.get('met',{}) ]
       info['meta'].append({"date": datetime.datetime.now().ctime(),\
-         "tit": "saved from Ianus to netJSON" })
+         "title": "saved from Ianus to netJSON" })
       info['nNodes'] = nr; time = { "Tmin": minT, "Tmax": maxT }
-      if 'til' in K:
-         Tlabs = { str(k): v for k,v in N['til'] }
-         time['Tlabs'] = Tlabs
-      if nr!=nc: raise TQ.TQerror("Ianus2netJSON: two-mode not implemented yet")
-      nodes = []; names = N.get('nam', ['v'+str(v+org) for v in range(nr)])
-      nodeAct = N.get('tin', [(minT, maxT+1, 1) for v in range(nr)])
-      for v in range(nr):
-         Node = { 'id': v+1, 'lab': names[v], 'tq': nodeAct[v] }
-         nodes.append(Node)
-      links = []; ltype = "arc"
-      for u in range(nr):
-         for v in range(nc):
-            if M[u][v]!=[]: 
-               Link = {"type": ltype, "n1": u+1, "n2": v+1, # "rel": link[3]
-                  "tq": M[u][v] }
-               links.append(Link)      
+#      if 'til' in K: Tlabs = { str(k): v for k,v in N['til'] }
+#      else:
+      Tlabs = { str(y):str(y) for y in range(minT,maxT+1)}
+      time['Tlabs'] = Tlabs
+      if nr==nc:
+         nodes = []; names = N.get('nam', ['v'+str(v+org) for v in range(nr)])
+         nodeAct = N.get('tin', [[(minT, maxT+1, 1)] for v in range(nr)])
+         for v in range(nr):
+            Node = { 'id': v+1, 'lab': names[v], 'tq': nodeAct[v] }
+            nodes.append(Node)
+         links = []; ltype = "arc"
+         for u in range(nr):
+            for v in range(nc):
+               if M[u][v]!=[]: 
+                  Link = {"type": ltype, "n1": u+1, "n2": v+1, # "rel": link[3]
+                     "tq": M[u][v] }
+                  links.append(Link)      
+      else:
+#         raise TQ.TQerror("Ianus2netJSON: two-mode not implemented yet")
+         n = nr+nc; info['nNodes'] = n; info['dim'] = [nr, nc]
+         nodes = []; names = N.get('nam', ['v'+str(v+org) for v in range(n)])
+         nodeAct = N.get('tin', [[(minT, maxT+1, 1)] for v in range(n)])
+         for v in range(nr):
+            Node = { 'id': v+1, 'lab': names[v], 'mode':1, 'tq': nodeAct[v] }
+            nodes.append(Node)
+         for v in range(nr,n):
+            Node = { 'id': v+1, 'lab': names[v], 'mode':2, 'tq': nodeAct[v] }
+            nodes.append(Node)
+         links = []; ltype = "arc"
+         for u in range(nr):
+            for v in range(nc):
+               if M[u][v]!=[]: 
+                  Link = {"type": ltype, "n1": u+1, "n2": nr+v+1, # "rel": link[3]
+                     "tq": M[u][v] }
+                  links.append(Link)      
       info['nArcs'] = len(links); info['nEdges'] = 0; info['time'] = time
       net = {"netJSON": "basic", "info": info, "nodes": nodes, "links": links}
       js = open(info['network']+'.json','w')
