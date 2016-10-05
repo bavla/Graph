@@ -236,8 +236,7 @@ class Graph(Search,Coloring):
         G = Graph()
         G._graph = copy(self._graph); G._graph['mode'] = 1
         for v in self.nodesMode(1):
-            G.addNode(v)
-            G._nodes[v][3] = dict(self._nodes[v][3])
+            G.addNode(v); G._nodes[v][3] = dict(self._nodes[v][3])
             del(G._nodes[v][3]['mode'])
         for p in self._links.keys():
             u,v,k = p
@@ -251,43 +250,35 @@ class Graph(Search,Coloring):
                 G._links[q] = dict(self._links[p])
 #                print('p =',p,' q =',q,self._links[p])
         return G
-    def two2oneRows(self):
-        n1 = len(list(self.nodesMode(1)))
-        n2 = len(list(self.nodesMode(2)))
-        G = Graph(); G._graph['mode'] = 1
+    def two2oneRows(self,key='w'):
+        nr,nc = self._graph['dim']
+        G = Graph(); G._graph['mode'] = 1; G._graph['nNodes'] = nr
         for v in self.nodesMode(1):
-            G.addNode(v)
-            G._nodes[v][3] = dict(self._nodes[v][3])
-            del(G._nodes[v][3]['mode'])
+            G.addNode(v,1); G._nodes[v][3] = dict(self._nodes[v][3])
+#            del(G._nodes[v][3]['mode'])
         for t in self.nodesMode(2):
             for p in self.inStar(t):
-                u = Graph.twin(t,p); pw = self._links[p]['w']
+                u = self.twin(t,p); pw = self._links[p][4][key]
                 for q in self.inStar(t):
-                    v = Graph.twin(t,q)
-                    if u <= v:
-                        r = (u,v,1)
-                        if not r in G._links: G._links[r] = {'w': 0}
-                        G._links[r]['w'] += pw*self._links[q]['w']
+                    v = self.twin(t,q); r = (u,v)
+                    if not r in G._links: G._links[r] = [ u,v,True,None,{key:0} ]
+                    G._links[r][4][key] += pw*self._links[q][4][key]
         return G
-    def two2oneCols(self):
-        n1 = len(list(self.nodesMode(1)))
-        n2 = len(list(self.nodesMode(2)))
-        G = Graph(); G._graph['mode'] = 1
-        for v in self.nodesMode(2):
-            G.addNode(v-n1)
-            G._nodes[v-n1][3] = dict(self._nodes[v-n1][3])
-            del(G._nodes[v-n1][3]['mode'])
+    def two2oneCols(self, key='w'):
+        nr,nc = self._graph['dim']
+        G = Graph(); G._graph['mode'] = 2; G._graph['nNodes'] = nc
+        for v in range(nc):
+            C.addNode(v+1,1); C._nodes[v+1][3] = dict(self._nodes[nr+v+1][3])
+#            del(G._nodes[v-nr][3]['mode'])
         for t in self.nodesMode(1):
             for p in self.outStar(t):
-                u = Graph.twin(t,p)-n1; pw = self._links[p]['w']
+                u = self.twin(t,p)-nr; pw = self._links[p][4][key]
                 for q in self.outStar(t):
-                    v = Graph.twin(t,q)-n1
-                    if u <= v:
-                       r = (u,v,1)
-                       if not r in G._links: G._links[r] = {'w': 0}
-                       G._links[r]['w'] += pw*self._links[q]['w']
+                    v = self.twin(t,q)-nr; r = (u,v)
+                    if not r in G._links: G._links[r] = [ u,v,True,None,{key:0} ]
+                    G._links[r][4][key] += pw*self._links[q][4][key]
         return G
-    def multiply(A,B,oneMode=False):
+    def multiply(A,B,key='w',oneMode=False):
         nar,nac = A._graph['dim']; nbr,nbc = B._graph['dim']
         if nac != nbr: raise Graph.graphError(
             "Noncompatible networks {0} != {1}".format(nac,nbr))
@@ -302,14 +293,14 @@ class Graph(Search,Coloring):
                 C._nodes[v+1][3] = dict(B._nodes[v+1+nbr-nar][3])
         for t in A.nodesMode(2):
             for p in A.inStar(t):
-                u = A.twin(t,p); Apw = A._links[p][4]['w']
+                u = A.twin(t,p); Apw = A._links[p][4][key]
                 for q in B.outStar(t-nar):
                     v = B.twin(t-nar,q)-nbr
                     if not oneMode: v = v+nar
                     r = (u,v)
                     if not r in C._links: C._links[r] = \
-                       [ u, v, True, None, {'w': 0} ]
-                    C._links[r][4]['w'] += Apw*B._links[q][4]['w']
+                       [ u, v, True, None, {key: 0} ]
+                    C._links[r][4][key] += Apw*B._links[q][4][key]
         return C
     def TQtwo2oneRows(self):
         nr,nc = self._graph['dim']
