@@ -6,7 +6,7 @@
 # last change: 12. January 2014
 # last change: 29. August 2016
 
-import re, sys, json, TQ, datetime
+import re, sys, os, json, TQ, datetime, platform
 import turtle as t
 from math import *
 from random import random, randint, shuffle
@@ -26,6 +26,9 @@ class Graph(Search,Coloring):
         'Salmon', 'SeaGreen']
     INFTY = 1e10
 
+    @staticmethod
+    def location():
+        return [platform.uname()[1], os.getcwd()]
     @staticmethod
     def turtleXY(T):
         return ((T[0]-0.5)*t.window_width(),(T[1]-0.5)*t.window_height())
@@ -48,10 +51,14 @@ class Graph(Search,Coloring):
             return None
         elif len(S)==1: return u
         else: return (S-{u}).pop()
-    def __init__(self,simple=False,mode=1,multirel=False,temporal=False):
+    def __init__(self,simple=False,mode=1,multirel=False,temporal=False,
+        network="test",title="Test",):
         self._linkId = 0
         self._graph = {'simple': simple,'mode': mode,'multirel':multirel,
-            'temporal':temporal,'meta':[],'legends':{}}
+            'temporal':temporal,'network':network,'title':title,'meta':[],
+            'legends':{}}
+        self._graph['required'] = {"nodes":['id','mode','lab'],
+            'links':['n1', 'n2', 'type']}                       
         self._nodes = {}
         self._links = {}
     def __Str__(self): return "Graph:\nNodes: "+ \
@@ -319,7 +326,16 @@ class Graph(Search,Coloring):
         return C
     def TQtwo2oneCols(self):
         nr,nc = self._graph['dim']
-        C = Graph(); C._graph['mode'] = 2; C._graph['nNodes'] = nc
+        C = Graph(); C._graph['mode'] = 1; C._graph['nNodes'] = nc
+        C._graph['temporal'] = True; C._graph['simple'] = True
+        C._graph['network'] = self._graph['network']+'COLS'
+        C._graph['title'] = 'COLS of '+self._graph['title']
+        C._graph['time'] = self._graph['time']
+        if 'legends' in self._graph: C._graph['legends']['Tlabs'] = \
+            self._graph['legends']['Tlabs']
+        C._graph['meta'] = self._graph['meta']
+        C._graph['required'] = self._graph['required']
+        C._graph['multirel'] = self._graph['multirel']
         for v in range(nc):
             C.addNode(v+1,1); C._nodes[v+1][3] = dict(self._nodes[nr+v+1][3])
         for t in self.nodesMode(1):
@@ -499,11 +515,15 @@ class Graph(Search,Coloring):
         if mode==2:
             nr, nc = G._graph['dim'] = net['info'].get('dim',[0,0])
             if nr==0: raise Graph.graphError("Missing mode1 size")
+        G._graph['title'] = net['info'].get('title',"INPUT network")        
+        G._graph['network'] = net['info'].get('network',"network")        
         G._graph['simple'] = net['info'].get('simple',False)
         G._graph['meta'] = net['info'].get('meta',[])
         G._graph['multirel'] = net['info'].get('multirel',False)
         G._graph['directed'] = net['info'].get('directed',False)        
         G._graph['legends'] = net['info'].get('legends',{})
+        G._graph['required'] = net['info'].get('required',{"nodes":[],"links":[]})        
+        G._graph['trace'] = net['info'].get('trace',["loadNetJson"])        
         temporal = net['info'].get('temporal',False)
         G._graph['temporal'] = temporal
         if temporal:
@@ -526,28 +546,30 @@ class Graph(Search,Coloring):
     def saveNetJSON(self,file=None,indent=None):
         n = len(self._nodes)
         info = {}; nodes = {}; links = {};
-        info['simple'] = self._graph['simple'] 
+        info['simple'] = self._graph.get('simple',False) 
         info['directed'] = len(list(self.edges()))==0
-        temporal = self._graph['temporal']
+        temporal = self._graph.get('temporal',False)
         info['temporal'] = temporal
         info['org'] = 1
-        info['mode'] = self._graph['mode']
-        info['network'] = "test"
-        info['multirel'] = False
-        info['meta'] =  self._graph['meta'] 
+        info['mode'] = self._graph.get('mode',1)
+        if info['mode']>1:
+            info['dim'] = \
+               [len(list(self.nodesMode(i+1))) for i in range(info['mode'])]
+        info['network'] = self._graph.get('network',"test")
+        info['title'] = self._graph.get('title',"testSAVE")
+        info['multirel'] = self._graph.get('multirel',False)
+        info['meta'] =  self._graph.get('meta',[]) 
         info['meta'].append({"date": datetime.datetime.now().ctime(),\
              "title": "saved from Graph to netJSON" })
+        info['trace'] = self._graph.get('trace',[])
+        info['required'] = self._graph.get('required',{})
         info['nNodes'] = n
         if temporal:
             minT, maxT = self._graph['time']
-            Tlabs = self._graph.get('Tlabs',
+            leg = self._graph.get('legends',None)
+            if leg != None: Tlabs = leg.get('Tlabs',
                { str(y):str(y) for y in range(minT,maxT+1)})
             info['time'] = { "Tmin": minT, "Tmax": maxT, "Tlabs": Tlabs }
-#      if 'til' in K:
-#         Tlabs = { str(k): v for k,v in N['til'] }
-#         time['Tlabs'] = Tlabs
-#      if nr!=nc: raise TQ.TQerror("Ianus2netJSON: two-mode not implemented yet")
-#        nodeAct = N.get('tin', [(minT, maxT+1, 1) for v in range(nr)])
         nodes = []
         for node in self._nodes:
             Node = self._nodes[node][3]; Node['id'] = node 
@@ -593,6 +615,33 @@ class Graph(Search,Coloring):
             if w == None: w = 1
             net.write(str(ind[u])+' '+str(ind[v])+' '+str(w)+'\n')
         net.close()
+    def twoMode2netJSON(yFile,netFile,jsonFile,instant=True,key='w',
+                        replace=True,indent=None):
+        def timer(): return datetime.datetime.now().ctime()
+        G = Graph.loadPajek(netFile); F = Graph()
+        for v in G.nodesMode(1): F.addNode(v)
+        F.loadPajekClu('year',yFile)
+        minT = min(F.getNode(v,'year') for v in F.nodes())
+        maxT = max(F.getNode(v,'year') for v in F.nodes())
+        nr = len(list(G.nodesMode(1))); nc = len(list(G.nodesMode(2)))
+        for v in G.nodesMode(1): G.setNode(v,'act', [(F.getNode(v,'year'),maxT+1,1)])
+        for v in G.nodesMode(2): G.setNode(v,'act', [(minT,maxT+1,1)])
+        for e in G.links():
+            u,v,*r = G._links[e]; t = F.getNode(u,'year')
+            G._links[e][4]['tq'] = [(t,t+1,G._links[e][4][key])] if instant \
+                else [(t,maxT+1,G._links[e][4][key])]
+            if replace: del G._links[e][4][key]
+        G.setGraph('title',"instant" if instant else "cumulative")
+        G.setGraph('temporal',True); G.setGraph('mode',2); G.setGraph('dim',(nr,nc))
+        G.setGraph('meta',[{"date":timer(),"title":"TwoMode2netJSON"}])
+        G.setGraph('time',(minT,maxT)); G.setGraph('temporal',True)         
+        G.setGraph('Tlabs',{str(y):str(y) for y in range(minT,maxT+1)});
+        G.setGraph('trace',[timer(),Graph.location(),"Graph","twoMode2netJSON",
+            [yFile,netFile],['input','input']])
+        G.setGraph('required',{"nodes": ["id","mode","lab","act"],
+            "links": ["n1","n2","type","tq"]}) # for JSON
+        G.saveNetJSON(jsonFile,indent=indent)
+        return G       
     def loadPajekClu(self,key,file):
         try:
             clu = open(file,'r')
