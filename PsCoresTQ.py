@@ -1,5 +1,6 @@
 gdir = 'c:/users/batagelj/work/python/graph/graph'
-wdir = 'c:/users/batagelj/work/python/graph/JSON'
+# wdir = 'c:/users/batagelj/work/python/graph/JSON/test'
+wdir = 'c:/users/batagelj/work/python/graph/JSON/SN5'
 import sys, os, datetime, json
 sys.path = [gdir]+sys.path; os.chdir(wdir)
 import GraphNew as Graph
@@ -7,9 +8,12 @@ import TQ
 # fJSON = 'ConnectivityWeighted.json'
 # fJSON = "violenceE.json"
 # fJSON = 'stem.json'
-fJSON = 'Terror news 50.json'
-S = Graph.Graph.loadNetJSON(fJSON); G = S.pairs2edges()
-G.saveNetJSON(file="Terror50E",indent=1)
+# fJSON = 'CcCtest.json'
+# fJSON = 'Terror news 50.json'
+fJSON = 'CcCSN5.json'
+# S = Graph.Graph.loadNetJSON(fJSON); G = S.pairs2edges()
+G = Graph.Graph.loadNetJSON(fJSON)
+# G.saveNetJSON(file="Terror50E",indent=1)
 # fJSON = 'ConnectivityTest.json'
 # fJSON = 'ExampleB.json'
 # fJSON = 'PathfinderTest.json'
@@ -30,9 +34,9 @@ step = 0
 while len(D)>0:
    step += 1
    dmin,u = min( (v,k) for k,v in Dmin.items() )
-   if step % 10 == 1:
-      print("{0:3d}. dmin={1:3d}   node={2:4d}".format(step,dmin,u))
-   cCore = TQ.TQ.complement(Core[u],Tmin,Tmax)
+   if step % 100 == 1:
+      print("{0:3d}. dmin={1:10.4f}   node={2:4d}".format(step,dmin,u))
+   cCore = TQ.TQ.complement(Core[u],Tmin,Tmax+1)
    core = TQ.TQ.extract(cCore,[d for d in D[u] if d[2] == dmin])
    if core!=[]:
       Core[u] = TQ.TQ.sum(Core[u],core)
@@ -48,7 +52,7 @@ while len(D)>0:
          else: Dmin[v] = min([e[2] for e in D[v]])
    if len(D[u])==0: del D[u]; del Dmin[u]
    else: Dmin[u] = min([e[2] for e in D[u]])
-print("{0:3d}. dmin={1:3d}   node={2:4d}".format(step,dmin,u))
+print("{0:3d}. dmin={1:10.4f}   node={2:4d}".format(step,dmin,u))
 # print("\n-----\nCore =",Core)
 t2 = datetime.datetime.now()
 print("\nfinished: ",t2.ctime(),"\ntime used: ", t2-t1)

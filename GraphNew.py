@@ -331,7 +331,7 @@ class Graph(Search,Coloring):
                     C._links[r][4]['tq'] = TQ.TQ.sum(C._links[r][4]['tq'],
                        TQ.TQ.prod(Apw,self._links[q][4]['tq']))
         return C
-    def TQtwo2oneCols(self):
+    def TQtwo2oneCols(self,lType='edge',key='tq'):
         nr,nc = self._graph['dim']
         C = Graph(); C._graph['mode'] = 1; C._graph['nNodes'] = nc
         C._graph['temporal'] = True; C._graph['simple'] = True
@@ -345,15 +345,30 @@ class Graph(Search,Coloring):
         C._graph['multirel'] = self._graph['multirel']
         for v in range(nc):
             C.addNode(v+1,1); C._nodes[v+1][3] = dict(self._nodes[nr+v+1][3])
+            C._nodes[v+1][3]['mode'] = 1
         for t in self.nodesMode(1):
             for p in self.outStar(t):
-                u = self.twin(t,p)-nr; Apw = self._links[p][4]['tq']
+                u = self.twin(t,p)-nr; Apw = self._links[p][4][key]
                 for q in self.outStar(t):
-                    v = self.twin(t,q)-nr; r = (u,v)
-                    if not r in C._links: C._links[r] = \
-                       [ u, v, True, None, {'tq': []} ]
-                    C._links[r][4]['tq'] = TQ.TQ.sum(C._links[r][4]['tq'],
-                       TQ.TQ.prod(Apw,self._links[q][4]['tq']))
+                    v = self.twin(t,q)-nr
+                    if u<=v:
+                        r = (u,v)
+                        if lType=='edge':
+                            if not r in C._links:
+                                C.addEdge(u,v,id=r,w={key: []})
+                            s = TQ.TQ.prod(Apw,self._links[q][4][key])
+                            if u!=v: s = TQ.TQ.sum(s,s)
+                            C._links[r][4][key] = TQ.TQ.sum(C._links[r][4][key],s)
+                        else:
+                            if not r in C._links:
+                                C.addArc(u,v,id=r,w={key: []})
+                            s = TQ.TQ.prod(Apw,self._links[q][4][key])
+                            C._links[r][4][key] = TQ.TQ.sum(C._links[r][4][key],s)
+                            if u!=v:
+                                rr = (v,u)
+                                if not rr in C._links:
+                                    C.addArc(v,u,id=rr,w={key: []})
+                                C._links[rr][4][key] = C._links[r][4][key] 
         return C
     def TQmultiply(A,B,oneMode=False):
         nar,nac = A._graph['dim']; nbr,nbc = B._graph['dim']
