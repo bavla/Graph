@@ -309,6 +309,13 @@ class Graph(Search,Coloring):
                        [ u, v, True, None, {key: 0} ]
                     C._links[r][4][key] += Apw*B._links[q][4][key]
         return C
+    def TQnormal(self,key='tq'):
+        N = deepcopy(self)
+        for u in N.nodesMode(1):
+            qu = TQ.TQ.invert(N.TQnetOutDeg(u),vZero=1)
+            for p in N.outStar(u):
+                N._links[p][4][key] = TQ.TQ.prod(qu,N._links[p][4][key])
+        return N
     def TQtwo2oneRows(self):
         nr,nc = self._graph['dim']
         C = Graph(); C._graph['mode'] = 1; C._graph['nNodes'] = nr
@@ -373,40 +380,40 @@ class Graph(Search,Coloring):
                     C._links[r][4]['tq'] = TQ.TQ.sum(C._links[r][4]['tq'],
                        TQ.TQ.prod(Apw,B._links[q][4]['tq']))
         return C
-    def TQnetDeg(self,u):
-        deg = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
+    def TQnetDeg(self,u,key='tq'):
+        deg = TQ.TQ.setConst(self._nodes[u][3]['act'],0)
         for p in self.star(u):
-            deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4]['tq']))
+            deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4][key]))
         return deg
-    def TQnetInDeg(self,u):
-        deg = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
+    def TQnetInDeg(self,u,key='tq'):
+        deg = TQ.TQ.setConst(self._nodes[u][3]['act'],0)
         for p in self.inStar(u):
-            deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4]['tq']))
+            deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4][key]))
         return deg
-    def TQnetOutDeg(self,u):
-        deg = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
+    def TQnetOutDeg(self,u,key='tq'):
+        deg = TQ.TQ.setConst(self._nodes[u][3]['act'],0)
         for p in self.outStar(u):
-            deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4]['tq']))
+            deg = TQ.TQ.sum(deg,TQ.TQ.binary(self._links[p][4][key]))
         return deg    
-    def TQnetSum(self,u):
-        s = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
+    def TQnetSum(self,u,key='tq'):
+        s = TQ.TQ.setConst(self._nodes[u][3]['act'],0)
         for p in self.star(u):
-            s = TQ.TQ.sum(s,self._links[p][4]['tq'])
+            s = TQ.TQ.sum(s,self._links[p][4][key])
         return s
-    def TQnetInSum(self,u):
-        s = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
+    def TQnetInSum(self,u,key='tq'):
+        s = TQ.TQ.setConst(self._nodes[u][3]['act'],0)
         for p in self.inStar(u):
-            s = TQ.TQ.sum(s,self._links[p][4]['tq'])
+            s = TQ.TQ.sum(s,self._links[p][4][key])
         return s
-    def TQnetOutSum(self,u):
-        s = TQ.TQ.setConst(self._nodes[u][3]['tq'],0)
+    def TQnetOutSum(self,u,key='tq'):
+        s = TQ.TQ.setConst(self._nodes[u][3]['act'],0)
         for p in self.outStar(u):
-            s = TQ.TQ.sum(s,self._links[p][4]['tq'])
+            s = TQ.TQ.sum(s,self._links[p][4][key])
         return s    
-    def TQnetBin(self):
+    def TQnetBin(self,key='tq'):
         B = deepcopy(self)
         for p in B._links:
-            B._links[p][4]['tq'] = TQ.TQ.binary(B._links[p][4]['tq'])
+            B._links[p][4][key] = TQ.TQ.binary(B._links[p][4][key])
         return B        
     def loadPajek(file):
         try: net = open(file,'r')

@@ -171,11 +171,11 @@ class TQ(object):
       return(c)
 
    @staticmethod
-   def invert(a):
+   def invert(a,vZero=0):
       c = []
       for (sa,fa,va) in a:
          if va!=0: c.append((sa,fa,1/va))
-         else: c.append((sa,fa,0))
+         else: c.append((sa,fa,vZero))
       return(c)
 
    @staticmethod
