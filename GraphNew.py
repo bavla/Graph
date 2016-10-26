@@ -87,41 +87,41 @@ class Graph(Search,Coloring):
                 self._nodes[u][3]['mode'] = mode
         else: raise self.graphError(
             "Node {0} already defined".format(u))
-    def addEdge(self,u,v,w={},rel=None,id=None):
+    def addEdge(self,u,v,w={},rel=None,lid=None):
         p,q = (u,v) if u < v else (v,u)
         linked = q in self._nodes[p][0]
         if not linked:
-            if id == None:
-                self._linkId += 1; id = self._linkId
-            self._nodes[p][0][q] = [id]
-            self._nodes[q][0][p] = [id]
-            self._links[id] = [p,q,False,rel,w]
+            if lid == None:
+                self._linkId += 1; lid = self._linkId
+            self._nodes[p][0][q] = [lid]
+            self._nodes[q][0][p] = [lid]
+            self._links[lid] = [p,q,False,rel,w]
         elif not self._graph['simple']:
-            if id == None:
-                self._linkId += 1; id = self._linkId
-            self._nodes[p][0][q].append(id)
-            self._nodes[q][0][p].append(id)
-            self._links[id] = [p,q,False,rel,w]
+            if lid == None:
+                self._linkId += 1; lid = self._linkId
+            self._nodes[p][0][q].append(lid)
+            self._nodes[q][0][p].append(lid)
+            self._links[lid] = [p,q,False,rel,w]
         else: raise self.graphError(
             "Link {0} already defined".format((u,v)))
-        return id
-    def addArc(self,u,v,w={},rel=None,id=None):
+        return lid
+    def addArc(self,u,v,w={},rel=None,lid=None):
         linked = v in self._nodes[u][2]
         if not linked:
-            if id == None:
-                self._linkId += 1; id = self._linkId            
-            self._nodes[u][2][v] = [id]
-            self._nodes[v][1][u] = [id]
-            self._links[id] = [u,v,True,rel,w]
+            if lid == None:
+                self._linkId += 1; lid = self._linkId            
+            self._nodes[u][2][v] = [lid]
+            self._nodes[v][1][u] = [lid]
+            self._links[lid] = [u,v,True,rel,w]
         elif not self._graph['simple']:
-            if id == None:
-                self._linkId += 1; id = self._linkId            
-            self._nodes[u][2][v].append(id)
-            self._nodes[v][1][u].append(id)
-            self._links[id] = [u,v,True,rel,w]
+            if lid == None:
+                self._linkId += 1; lid = self._linkId            
+            self._nodes[u][2][v].append(lid)
+            self._nodes[v][1][u].append(lid)
+            self._links[lid] = [u,v,True,rel,w]
         else: raise self.graphError(
             "Link {0} already defined".format((u,v)))
-        return id
+        return lid
     def neighbors(self,u):
         return (set(self._nodes[u][0].keys()) |
                 set(self._nodes[u][1].keys()) |
@@ -216,8 +216,8 @@ class Graph(Search,Coloring):
             T._nodes[t][3]['mode'] = mode
         for p in self._links.keys():
             u,v,directed,r,w = self._links[p]
-            if directed: T.addArc(v-nr,u+nc,w,r,id=p)
-            else: T.addEdge(v-nr,u+nc,w,r,id=p)
+            if directed: T.addArc(v-nr,u+nc,w,r,lid=p)
+            else: T.addEdge(v-nr,u+nc,w,r,lid=p)
         T._graph['dim'] = [nc,nr]
         return T
     def one2twoMode(self):
@@ -355,19 +355,19 @@ class Graph(Search,Coloring):
                         r = (u,v)
                         if lType=='edge':
                             if not r in C._links:
-                                C.addEdge(u,v,id=r,w={key: []})
+                                C.addEdge(u,v,lid=r,w={key: []})
                             s = TQ.TQ.prod(Apw,self._links[q][4][key])
                             if u!=v: s = TQ.TQ.sum(s,s)
                             C._links[r][4][key] = TQ.TQ.sum(C._links[r][4][key],s)
                         else:
                             if not r in C._links:
-                                C.addArc(u,v,id=r,w={key: []})
+                                C.addArc(u,v,lid=r,w={key: []})
                             s = TQ.TQ.prod(Apw,self._links[q][4][key])
                             C._links[r][4][key] = TQ.TQ.sum(C._links[r][4][key],s)
                             if u!=v:
                                 rr = (v,u)
                                 if not rr in C._links:
-                                    C.addArc(v,u,id=rr,w={key: []})
+                                    C.addArc(v,u,lid=rr,w={key: []})
                                 C._links[rr][4][key] = C._links[r][4][key] 
         return C
     def TQmultiply(A,B,oneMode=False):
@@ -562,8 +562,8 @@ class Graph(Search,Coloring):
             L = K.copy(); lid = L.pop('id',None);
             u = L.pop('n1',None); v = L.pop('n2',None)
             r = L.pop('id',None); t = L.pop('type','edge')
-            if t=='arc': l = G.addArc(u,v,w=L,rel=r,id=lid)
-            else: l = G.addEdge(u,v,w=L,rel=r,id=lid)            
+            if t=='arc': l = G.addArc(u,v,w=L,rel=r,lid=lid)
+            else: l = G.addEdge(u,v,w=L,rel=r,lid=lid)            
         return G
     def saveNetJSON(self,file=None,indent=None):
         n = len(self._nodes)
