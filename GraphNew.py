@@ -316,20 +316,44 @@ class Graph(Search,Coloring):
             for p in N.outStar(u):
                 N._links[p][4][key] = TQ.TQ.prod(qu,N._links[p][4][key])
         return N
-    def TQtwo2oneRows(self):
+    def TQtwo2oneRows(self,lType='edge',key='tq'):
         nr,nc = self._graph['dim']
         C = Graph(); C._graph['mode'] = 1; C._graph['nNodes'] = nr
+        C._graph['temporal'] = True; C._graph['simple'] = True
+        C._graph['network'] = self._graph['network']+'ROWS'
+        C._graph['title'] = 'ROWS of '+self._graph['title']
+        C._graph['time'] = self._graph['time']
+        if 'legends' in self._graph: C._graph['legends']['Tlabs'] = \
+            self._graph['legends']['Tlabs']
+        C._graph['meta'] = self._graph['meta']
+        C._graph['required'] = self._graph['required']
+        C._graph['multirel'] = self._graph['multirel']
         for v in range(nr):
             C.addNode(v+1,1); C._nodes[v+1][3] = dict(self._nodes[v+1][3])
+            C._nodes[v+1][3]['mode'] = 1
         for t in self.nodesMode(2):
             for p in self.inStar(t):
-                u = self.twin(t,p); Apw = self._links[p][4]['tq']
+                u = self.twin(t,p); Apw = self._links[p][4][key]
                 for q in self.inStar(t):
-                    v = self.twin(t,q); r = (u,v)
-                    if not r in C._links: C._links[r] = \
-                       [ u, v, True, None, {'tq': []} ]
-                    C._links[r][4]['tq'] = TQ.TQ.sum(C._links[r][4]['tq'],
-                       TQ.TQ.prod(Apw,self._links[q][4]['tq']))
+                    v = self.twin(t,q)
+                    if u<=v:
+                        s = TQ.TQ.prod(Apw,self._links[q][4][key])
+                        if s==[]: continue
+                        r = (u,v)
+                        if lType=='edge':
+                            if not r in C._links:
+                                C.addEdge(u,v,lid=r,w={key: []})
+                            if u!=v: s = TQ.TQ.sum(s,s)
+                            C._links[r][4][key] = TQ.TQ.sum(C._links[r][4][key],s)
+                        else:
+                            if not r in C._links:
+                                C.addArc(u,v,lid=r,w={key: []})
+                            C._links[r][4][key] = TQ.TQ.sum(C._links[r][4][key],s)
+                            if u!=v:
+                                rr = (v,u)
+                                if not rr in C._links:
+                                    C.addArc(v,u,lid=rr,w={key: []})
+                                C._links[rr][4][key] = C._links[r][4][key] 
         return C
     def TQtwo2oneCols(self,lType='edge',key='tq'):
         nr,nc = self._graph['dim']
@@ -352,17 +376,17 @@ class Graph(Search,Coloring):
                 for q in self.outStar(t):
                     v = self.twin(t,q)-nr
                     if u<=v:
+                        s = TQ.TQ.prod(Apw,self._links[q][4][key])
+                        if s==[]: continue
                         r = (u,v)
                         if lType=='edge':
                             if not r in C._links:
                                 C.addEdge(u,v,lid=r,w={key: []})
-                            s = TQ.TQ.prod(Apw,self._links[q][4][key])
                             if u!=v: s = TQ.TQ.sum(s,s)
                             C._links[r][4][key] = TQ.TQ.sum(C._links[r][4][key],s)
                         else:
                             if not r in C._links:
                                 C.addArc(u,v,lid=r,w={key: []})
-                            s = TQ.TQ.prod(Apw,self._links[q][4][key])
                             C._links[r][4][key] = TQ.TQ.sum(C._links[r][4][key],s)
                             if u!=v:
                                 rr = (v,u)
@@ -370,13 +394,24 @@ class Graph(Search,Coloring):
                                     C.addArc(v,u,lid=rr,w={key: []})
                                 C._links[rr][4][key] = C._links[r][4][key] 
         return C
-    def TQmultiply(A,B,oneMode=False):
+    def TQmultiply(A,B,oneMode=False,keyA='tq',keyB='tq'):
         nar,nac = A._graph['dim']; nbr,nbc = B._graph['dim']
         if nac != nbr: raise Graph.graphError(
             "Noncompatible networks {0} != {1}".format(nac,nbr))
         if oneMode and (nar != nbc): raise Graph.graphError(
             "Product is not a one-mode network {0} != {1}".format(nar,nbc))
         C = Graph(); C._graph['mode'] = 2; C._graph['dim'] = [nar,nbc]
+        C._graph['temporal'] = True; C._graph['simple'] = True
+        C._graph['network'] = A._graph['network']+'X'+B._graph['network']
+        C._graph['title'] = 'PROD of '+A._graph['title']+' + '+B._graph['title']
+        C._graph['time'] = A._graph['time']
+        if 'legends' in A._graph: C._graph['legends']['Tlabs'] = \
+            A._graph['legends']['Tlabs']
+        C._graph['meta'] = A._graph['meta']
+        C._graph['required'] = A._graph['required']
+        C._graph['multirel'] = A._graph['multirel']
+        C._graph['mode'] = 1 if oneMode else 2
+        C._graph['nNodes'] = nar if oneMode else nar+nbc 
         for v in range(nar):
             C.addNode(v+1,1); C._nodes[v+1][3] = dict(A._nodes[v+1][3])
         if not oneMode:
@@ -385,15 +420,15 @@ class Graph(Search,Coloring):
                 C._nodes[v+1][3] = dict(B._nodes[v+1+nbr-nar][3])
         for t in A.nodesMode(2):
             for p in A.inStar(t):
-                u = A.twin(t,p); Apw = A._links[p][4]['tq']
+                u = A.twin(t,p); Apw = A._links[p][4][keyA]
                 for q in B.outStar(t-nar):
+                    s = TQ.TQ.prod(Apw,B._links[q][4][keyB])
+                    if s==[]: continue
                     v = B.twin(t-nar,q)-nbr
                     if not oneMode: v = v+nar
                     r = (u,v)
-                    if not r in C._links: C._links[r] = \
-                       [ u, v, True, None, {'tq': []} ]
-                    C._links[r][4]['tq'] = TQ.TQ.sum(C._links[r][4]['tq'],
-                       TQ.TQ.prod(Apw,B._links[q][4]['tq']))
+                    if not r in C._links: C.addArc(u,v,lid=r,w={'tq':[]})
+                    C._links[r][4]['tq'] = TQ.TQ.sum(C._links[r][4]['tq'],s)
         return C
     def TQnetDeg(self,u,key='tq'):
         deg = TQ.TQ.setConst(self._nodes[u][3]['act'],0)
