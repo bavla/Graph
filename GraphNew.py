@@ -8,6 +8,7 @@
 
 import re, sys, os, json, TQ, datetime, platform
 import turtle as t
+import webbrowser
 from math import *
 from random import random, randint, shuffle
 from itertools import chain
@@ -765,6 +766,23 @@ class Graph(Search,Coloring):
         vec.write('*vertices '+str(n)+'\n')
         for i in range(n): vec.write(str(self.getNode(i+1,key))+'\n')
         vec.close()
+    def TQshow(tq,TQmax,Tmin,Tmax,w,h,tit):
+        TQ = [ list(q) for q in tq ]
+        js = open('barData.js','w')
+        js.write('var barData = '+str(TQ)+';\n')
+        js.write('var TQmax = '+str(TQmax)+';\n')
+        js.write('var Tmin = '+str(Tmin)+';\n')
+        js.write('var Tmax = '+str(Tmax)+';\n')
+        js.write('var width = '+str(w)+';\n')
+        js.write('var height = '+str(h)+';\n')
+        js.write('var title = "'+tit+'";\n')
+        js.close()  
+    # https://pymotw.com/3/webbrowser/
+    # import webbrowser
+    # b = webbrowser.get('google-chrome')
+    # b = webbrowser.get('mozilla')
+        b = webbrowser.get('windows-default')
+        b.open('c:/users/batagelj/work/python/graph/chart/barChart.html')
     def getXY(self,u):
         if not('x' in self._nodes[u][3]): self._nodes[u][3]['x'] = random()
         if not('y' in self._nodes[u][3]): self._nodes[u][3]['y'] = random()
