@@ -4,7 +4,10 @@
                     [40, 41, 13], [41, 42, 174], [42, 43, 25], [43, 44, 20], [45, 46, 15], [46, 47, 25]]
 var Tmin = 1;
 var Tmax = 47;
-var width = 600;
-var height = 250;
+var Width = 900;
+var Height = 250;
 var TQmax = 180;
-var title = 'Workers';
+var Title = 'Workers';
+var Rfill = 'orange';
+var xLab = 70;
+var yLab = 40;
