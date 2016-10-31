@@ -10,19 +10,19 @@
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
-var width=1000;
-var height=500;
-var title='test';
+var Width=1000;
+var Height=500;
+var Title='test';
 var TQmax=20;
 </script>
 <script src="./barData.js"></script>
 <!-- svg id="visualisation" width="1000" height="500" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg"></svg -->
 <svg id="visualisation"  width="1000" height="500" xmlns="http://www.w3.org/2000/svg"></svg>
 <script>
-function InitChart() {
+function MakeChart() {
   var vis = d3.select('#visualisation'),
-    WIDTH = width,
-    HEIGHT = height,
+    WIDTH = Width,
+    HEIGHT = Height,
     MARGINS = { top: 20, right: 20, bottom: 20, left: 50 },
     xRange = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right], 0.1).domain([Tmin,Tmax]),
 
@@ -45,9 +45,9 @@ function InitChart() {
     
   vis.append("svg:text")      
      .style("fill", "black")  
-     .attr("x", 70)          
-     .attr("y", 40)        
-     .text(title);     
+     .attr("x", xLab)          
+     .attr("y", yLab)        
+     .text(Title);     
     
   vis.append("svg:style")
      .attr('type', 'text/css')
@@ -71,9 +71,9 @@ function InitChart() {
     .attr('y', function (d) {return yRange(d[2]); })
     .attr('width', function (d) {return (xRange(d[1])-xRange(d[0])); })
     .attr('height', function (d) {return ((HEIGHT - MARGINS.bottom) - yRange(d[2])); })
-    .attr('fill', 'steelblue');
+    .attr('fill', Rfill);
 };
-InitChart();
+MakeChart();
 </script>
 </body>
 </html>
