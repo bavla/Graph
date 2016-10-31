@@ -766,16 +766,20 @@ class Graph(Search,Coloring):
         vec.write('*vertices '+str(n)+'\n')
         for i in range(n): vec.write(str(self.getNode(i+1,key))+'\n')
         vec.close()
-    def TQshow(tq,TQmax,Tmin,Tmax,w,h,tit):
+    def TQshow(tq,TQmax,Tmin,Tmax,w,h,tit,
+        fill='steelblue',xLab=70,yLab=40):
         TQ = [ list(q) for q in tq ]
         js = open('barData.js','w')
         js.write('var barData = '+str(TQ)+';\n')
         js.write('var TQmax = '+str(TQmax)+';\n')
         js.write('var Tmin = '+str(Tmin)+';\n')
         js.write('var Tmax = '+str(Tmax)+';\n')
-        js.write('var width = '+str(w)+';\n')
-        js.write('var height = '+str(h)+';\n')
-        js.write('var title = "'+tit+'";\n')
+        js.write('var Width = '+str(w)+';\n')
+        js.write('var Height = '+str(h)+';\n')
+        js.write('var Title = "'+tit+'";\n')
+        js.write('var Rfill = "'+fill+'";\n')
+        js.write('var xLab = "'+xLab+'";\n')
+        js.write('var yLab = "'+yLab+'";\n')
         js.close()  
     # https://pymotw.com/3/webbrowser/
     # import webbrowser
