@@ -341,10 +341,10 @@ class Graph(Search,Coloring):
                         s = TQ.TQ.prod(Apw,self._links[q][4][key])
                         if s==[]: continue
                         r = (u,v)
-                        if lType=='edge':
+                        if (lType=='edge') or (lType=='double'):
                             if not r in C._links:
                                 C.addEdge(u,v,lid=r,w={key: []})
-                            if u!=v: s = TQ.TQ.sum(s,s)
+                            if (u!=v) and (lType=='double'): s = TQ.TQ.sum(s,s)
                             C._links[r][4][key] = TQ.TQ.sum(C._links[r][4][key],s)
                         else:
                             if not r in C._links:
@@ -380,10 +380,10 @@ class Graph(Search,Coloring):
                         s = TQ.TQ.prod(Apw,self._links[q][4][key])
                         if s==[]: continue
                         r = (u,v)
-                        if lType=='edge':
+                        if (lType=='edge') or (lType=='double'):
                             if not r in C._links:
                                 C.addEdge(u,v,lid=r,w={key: []})
-                            if u!=v: s = TQ.TQ.sum(s,s)
+                            if (u!=v) and (lType=='double'): s = TQ.TQ.sum(s,s)
                             C._links[r][4][key] = TQ.TQ.sum(C._links[r][4][key],s)
                         else:
                             if not r in C._links:
@@ -522,7 +522,7 @@ class Graph(Search,Coloring):
                     G.setNode(node,'x',eval(L[2]))
                     G.setNode(node,'y',eval(L[3]))
                 if '[' in line:
-                    temporal = True; G.setNode(node,'tq',Graph.extractTQ(line))
+                    temporal = True; G.setNode(node,'act',Graph.extractTQ(line))
             elif status == 2:
                 i = line.find(':')
                 if i > 0:
@@ -766,10 +766,10 @@ class Graph(Search,Coloring):
         vec.write('*vertices '+str(n)+'\n')
         for i in range(n): vec.write(str(self.getNode(i+1,key))+'\n')
         vec.close()
-    def TQshow(tq,TQmax,Tmin,Tmax,w,h,tit,
+    def TQshow(tq,cdir,TQmax,Tmin,Tmax,w,h,tit,
         fill='steelblue',xLab=70,yLab=40):
         TQ = [ list(q) for q in tq ]
-        js = open('barData.js','w')
+        js = open(cdir+'/barData.js','w')
         js.write('var barData = '+str(TQ)+';\n')
         js.write('var TQmax = '+str(TQmax)+';\n')
         js.write('var Tmin = '+str(Tmin)+';\n')
@@ -778,15 +778,16 @@ class Graph(Search,Coloring):
         js.write('var Height = '+str(h)+';\n')
         js.write('var Title = "'+tit+'";\n')
         js.write('var Rfill = "'+fill+'";\n')
-        js.write('var xLab = "'+xLab+'";\n')
-        js.write('var yLab = "'+yLab+'";\n')
+        js.write('var xLab = "'+str(xLab)+'";\n')
+        js.write('var yLab = "'+str(yLab)+'";\n')
         js.close()  
     # https://pymotw.com/3/webbrowser/
     # import webbrowser
     # b = webbrowser.get('google-chrome')
     # b = webbrowser.get('mozilla')
         b = webbrowser.get('windows-default')
-        b.open('c:/users/batagelj/work/python/graph/chart/barChart.html')
+    #   b.open('c:/users/batagelj/work/python/graph/chart/barChart.html')
+        b.open(cdir+'/TQchart.html')
     def getXY(self,u):
         if not('x' in self._nodes[u][3]): self._nodes[u][3]['x'] = random()
         if not('y' in self._nodes[u][3]): self._nodes[u][3]['y'] = random()
