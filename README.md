@@ -1,3 +1,3 @@
 # Graph
 
-Package for network analysis
+Python package for network analysis
