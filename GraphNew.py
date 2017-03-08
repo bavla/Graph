@@ -465,7 +465,9 @@ class Graph(Search,Coloring):
         B = deepcopy(self)
         for p in B._links:
             B._links[p][4][key] = TQ.TQ.binary(B._links[p][4][key])
-        return B        
+        return B  
+    def Index(self): return { v[3]['lab']: k for k,v in self._nodes.items() }
+    def TQgetLinkValue(self,i,lu,lv): return self._links[(i[lu],i[lv])][4]['tq']          
     def loadPajek(file):
         try: net = open(file,'r')
         except: raise Graph.graphError(
@@ -489,6 +491,7 @@ class Graph(Search,Coloring):
                        for v in range(num):
                            if v==num1: mode = 2
                            G.addNode(v+1,mode)
+                       nr = num1; nc = num - num1
                     else:
                        for v in range(num): G.addNode(v+1)
                     status = 1; continue
@@ -553,6 +556,8 @@ class Graph(Search,Coloring):
         net.close()
         G._graph['simple'] = simple
         G._graph['mode'] = mode
+        if mode==2:
+            G._graph['dim'] = ( nr, nc )       
         G._graph['temporal'] = temporal
         if len(rels)>0:
             G._graph['multirel'] = True
