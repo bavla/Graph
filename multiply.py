@@ -21,12 +21,12 @@ print("\nloaded: ",t2.ctime(),"\ntime used: ", t2-t1)
 CC = G.TQtwo2oneCols()
 t3 = datetime.datetime.now()
 print("\ncomputed: ",t3.ctime(),"\ntime used: ", t3-t2)
-ia = { v[3]['lab']: k for k,v in CC._nodes.items() }
+ia = CC.Index()
 # iw = { v[3]['lab']: k for k,v in CR._nodes.items() }
 # CC._links[(ia['BORGATTI_S'],ia['EVERETT_M'])][4]['tq']
 # CC._links[(ia['IDI/B'],ia['HCL/B'])][4]['tq']
 # len(CC)
 # CC._links[(ia['BORGATTI_S'],ia['EVERETT_M'])][4]['tq']
-# CC._links[(ia['BORGATTI_S'],ia['BORGATTI_S'])][4]['tq']
+# BB = CC.TQgetLinkValue(ia,'BORGATTI_S','BORGATTI_S')
 # TQmax = 17; Tmin = 1970; Tmax = 2009; w = 600; h = 250; tit = 'BORGATTI_S'
 # TQshow(BB,cdir,TQmax,Tmin,Tmax,w,h,tit,fill='orange')
