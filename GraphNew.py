@@ -71,7 +71,9 @@ class Graph(Search,Coloring):
         for u in self._nodes.keys(): yield u
     def nodesMode(self,mode):
         for u in self._nodes.keys():
-            if self._nodes[u][3]['mode'] == mode: yield u
+            if 'mode' in self._nodes[u][3].keys():
+                if self._nodes[u][3]['mode'] == mode: yield u
+            elif mode == 1: yield u
     def links(self):
         for e in self._links.keys(): yield e
     def edges(self):
@@ -431,6 +433,13 @@ class Graph(Search,Coloring):
                     if not r in C._links: C.addArc(u,v,lid=r,w={'tq':[]})
                     C._links[r][4]['tq'] = TQ.TQ.sum(C._links[r][4]['tq'],s)
         return C
+    def TQactivity(self,Rows,Cols):
+        s = []
+        for u in Rows:
+            for p in self.outStar(u):
+                v = self.twin(u,p)
+                if v in Cols: s = TQ.TQ.sum(s,self.getLink(p,'tq'))
+        return(s)
     def TQnetDeg(self,u,key='tq'):
         deg = TQ.TQ.setConst(self._nodes[u][3]['act'],0)
         for p in self.star(u):
@@ -466,6 +475,20 @@ class Graph(Search,Coloring):
         for p in B._links:
             B._links[p][4][key] = TQ.TQ.binary(B._links[p][4][key])
         return B  
+    def TQgraph2mat(self):
+        onemode = self._graph['mode'] == 1
+        if onemode:
+            rows = self._nodes.keys(); cols = self._nodes.keys()
+        else:
+            rows = self.nodesMode(1); cols = self.nodesMode(2)
+        nr = len(list(rows)); nc = len(list(cols))
+        B = [[[] for v in range(nr)] for u in range(nc)]
+        for p in self._links.keys():
+            u = self._links[p][0]-1; v = self._links[p][1]-1
+            if not onemode: v = v - nr
+            B[u][v] = TQ.TQ.sum(B[u][v],self._links[p][4]['tq'])
+            if onemode and not self._links[p][2]: B[v][u] = B[u][v]
+        return B
     def Index(self): return { v[3]['lab']: k for k,v in self._nodes.items() }
     def TQgetLinkValue(self,i,lu,lv): return self._links[(i[lu],i[lv])][4]['tq']          
     def loadPajek(file):
